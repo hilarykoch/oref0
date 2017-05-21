@@ -240,18 +240,17 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
     fi
        read -p "Enable automatic sensitivity adjustment? (Aka, "autosens". We recommend this." [Y]/n " -r
                if [[ $REPLY =~ ^[Yy]$ ]]; then
-                            ENABLE+=" autosens "
-                                    fi
-                                            read -p "Enable autotuning of basals and ratios? (Recommended) [Y]/n " -r
-                                                    if [[ $REPLY =~ ^[Yy]$ ]]; then
-                                                                    ENABLE+=" autotune "
-                                                                            fi
-                                                                                    read -p "Enable advanced meal assist? (Recommended) [Y]/n " -r
-                                                                                            if [[ $REPLY =~ ^[Yy]$ ]]; then
-                                                                                                            ENABLE+=" meal "
-                                                                                                                    fi
-                                                                                                                    else 
-   
+                  ENABLE+=" autosens "
+               fi
+       read -p "Enable autotuning of basals and ratios? (Recommended) [Y]/n " -r
+               if [[ $REPLY =~ ^[Yy]$ ]]; then
+                  ENABLE+=" autotune "
+               fi
+       read -p "Enable advanced meal assist? (Recommended) [Y]/n " -r
+               if [[ $REPLY =~ ^[Yy]$ ]]; then
+                  ENABLE+=" meal "
+               fi
+      else    
    if [[ $ww_ti_usb_reset =~ ^[Yy] ]]; then
       ww_ti_usb_reset="yes"
    else
