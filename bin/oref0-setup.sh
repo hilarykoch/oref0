@@ -136,7 +136,7 @@ if ! ( git config -l | grep -q user.name ); then
     git config --global user.name $NAME
 fi
 if [[ -z "$DIR" || -z "$serial" ]]; then
-    echo "Usage: oref0-setup.sh <--dir=directory> <--serial=pump_serial_#> [--tty=/dev/ttySOMETHING] [--max_iob=0] [--ns-host=https://mynightscout.azurewebsites.net] [--api-secret=myplaintextsecret] [--cgm=(G4-upload|G4-local-only|shareble|G5|MDT|xdrip)] [--bleserial=SM123456] [--blemac=FE:DC:BA:98:76:54] [--btmac=AB:CD:EF:01:23:45] [--enable='autosens dexusb'] [--radio_locale=(WW|US)] [--ww_ti_usb_reset=(yes|no)]"
+    echo "Usage: oref0-setup.sh <--dir=directory> <--serial=pump_serial_#> [--tty=/dev/ttySOMETHING] [--max_iob=0] [--ns-host=https://mynightscout.azurewebsites.net] [--api-secret=myplaintextsecret] [--cgm=(G4-upload|G4-local-only|shareble|G5|MDT|xdrip)] [--bleserial=SM123456] [--blemac=FE:DC:BA:98:76:54] [--btmac=AB:CD:EF:01:23:45] [--enable='autosens autotune dexusb'] [--radio_locale=(WW|US)] [--ww_ti_usb_reset=(yes|no)]"
     read -p "Start interactive setup? [Y]/n " -r
     if [[ $REPLY =~ ^[Nn]$ ]]; then
         exit
@@ -162,7 +162,7 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
     read -p "Are you using an Explorer Board? y/[N] " -r
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         ttyport=/dev/spidev5.1
-    echo "Ok, yay for Explorer Board! "
+        echo "Ok, yay for Explorer Board! "
     else
         read -p 'Are you using mmeowlink (i.e. with a TI stick)? If not, press enter. If so, what TTY port (full port address, looks like "/dev/ttySOMETHING" without the quotes - you probably want to copy paste it)? ' -r
         ttyport=$REPLY
@@ -229,7 +229,7 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
        echo "Ok, $BT_MAC it is."
        if [[ -z $BT_MAC ]]; then
           echo Ok, no Bluetooth for you.
-          else
+        else
           echo "Ok, $BT_MAC it is."
        fi
     fi
@@ -238,16 +238,16 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
        BT_PEB=$REPLY
        echo "Ok, $BT_PEB it is."
     fi
-       read -p "Enable automatic sensitivity adjustment? (Aka, "autosens". We recommend this." [Y]/n " -r
-               if [[ $REPLY =~ ^[Yy]$ ]]; then
-                  ENABLE+=" autosens "
-               fi
-       read -p "Enable autotuning of basals and ratios? (Recommended) [Y]/n " -r
-               if [[ $REPLY =~ ^[Yy]$ ]]; then
-                  ENABLE+=" autotune "
-               fi
-       ENABLE+=" meal "       
-      else    
+    read -p "Enable automatic sensitivity adjustment (autosens)? (Recommended) [Y]/n " -r
+    if ! [[ $REPLY =~ ^[Nn]$ ]]; then
+        ENABLE+=" autosens "
+    fi
+    read -p "Enable autotuning of basals and ratios? (Recommended) [Y]/n " -r
+    if ! [[ $REPLY =~ ^[Nn]$ ]]; then
+        ENABLE+=" autotune "
+    fi
+# TODO: figure out if this else really belongs here
+else
    if [[ $ww_ti_usb_reset =~ ^[Yy] ]]; then
       ww_ti_usb_reset="yes"
    else
@@ -346,7 +346,7 @@ mkdir -p settings || die "Can't mkdir settings"
 mkdir -p enact || die "Can't mkdir enact"
 mkdir -p upload || die "Can't mkdir upload"
 if [[ ${CGM,,} =~ "xdrip" ]]; then
-	mkdir -p xdrip || die "Can't mkdir xdrip"
+    mkdir -p xdrip || die "Can't mkdir xdrip"
 fi
 
 mkdir -p $HOME/src/
@@ -379,7 +379,7 @@ if [[ "$max_iob" -eq 0 && -z "$max_daily_safety_multiplier" && -z "&current_basa
 else
     preferences_from_args=()
     if [[ $max_iob -ne 0 ]]; then
-	preferences_from_args+="\"max_iob\":$max_iob "
+        preferences_from_args+="\"max_iob\":$max_iob "
     fi
     if [[ ! -z "$max_daily_safety_multiplier" ]]; then
         preferences_from_args+="\"max_daily_safety_multiplier\":$max_daily_safety_multiplier "
@@ -664,11 +664,9 @@ if [[ ! -z "$BT_PEB" ]]; then
   sudo cp $HOME/src/oref0/lib/oref0-setup/pancreoptions.json $directory/pancreoptions.json 
 fi  
 # configure optional features passed to enact/suggested.json report
-if [[ $ENABLE =~ autosens && $ENABLE =~ meal ]]; then
+if [[ $ENABLE =~ autosens ]]; then
     EXTRAS="settings/autosens.json monitor/meal.json"
-elif [[ $ENABLE =~ autosens ]]; then
-    EXTRAS="settings/autosens.json"
-elif [[ $ENABLE =~ meal ]]; then
+else
     EXTRAS='"" monitor/meal.json'
 fi
 echo Running: openaps report add enact/suggested.json text determine-basal shell monitor/iob.json monitor/temp_basal.json monitor/glucose.json settings/profile.json $EXTRAS
@@ -749,7 +747,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         (crontab -l; crontab -l | grep -q "cd $directory-cgm-loop && ps aux | grep -v grep | grep -q 'openaps monitor-cgm'" || echo "* * * * * cd $directory-cgm-loop && ps aux | grep -v grep | grep -q 'openaps monitor-cgm' || ( date; openaps monitor-cgm) | tee -a /var/log/openaps/cgm-loop.log; cp -up monitor/glucose-raw-merge.json $directory/cgm/glucose.json ; cp -up $directory/cgm/glucose.json $directory/monitor/glucose.json") | crontab -
     elif [[ ${CGM,,} =~ "xdrip" ]]; then
         (crontab -l; crontab -l | grep -q "cd $directory && ps aux | grep -v grep | grep -q 'openaps monitor-xdrip'" || echo "* * * * * cd $directory && ps aux | grep -v grep | grep -q 'openaps monitor-xdrip' || ( date; cp -rf xdrip/glucose.json xdrip/last-glucose.json; openaps monitor-xdrip) | tee -a /var/log/openaps/xdrip-loop.log; cmp --silent xdrip/glucose.json xdrip/last-glucose.json || cp -up $directory/xdrip/glucose.json $directory/monitor/glucose.json") | crontab -
-	(crontab -l; crontab -l | grep -q "xDripAPS.py" || echo "@reboot python $HOME/.xDripAPS/xDripAPS.py") | crontab -
+        (crontab -l; crontab -l | grep -q "xDripAPS.py" || echo "@reboot python $HOME/.xDripAPS/xDripAPS.py") | crontab -
     elif [[ $ENABLE =~ dexusb ]]; then
         (crontab -l; crontab -l | grep -q "@reboot .*dexusb-cgm" || echo "@reboot cd $directory && /usr/bin/python -u /usr/local/bin/oref0-dexusb-cgm-loop >> /var/log/openaps/cgm-dexusb-loop.log 2>&1" ) | crontab -
     elif ! [[ ${CGM,,} =~ "mdt" ]]; then # use nightscout for cgm
