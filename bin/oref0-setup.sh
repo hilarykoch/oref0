@@ -238,22 +238,20 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
        BT_PEB=$REPLY
        echo "Ok, $BT_PEB it is."
     fi
-    read -p "Do you need any advanced features? y/[N] " -r
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        read -p "Enable automatic sensitivity adjustment? y/[N] " -r
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            ENABLE+=" autosens "
-        fi
-        read -p "Enable autotuning of basals and ratios? y/[N] " -r
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            ENABLE+=" autotune "
-        fi
-        read -p "Enable advanced meal assist? y/[N] " -r
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            ENABLE+=" meal "
-        fi
-    fi
-else 
+       read -p "Enable automatic sensitivity adjustment? (Aka, "autosens". We recommend this." [Y]/n " -r
+               if [[ $REPLY =~ ^[Yy]$ ]]; then
+                            ENABLE+=" autosens "
+                                    fi
+                                            read -p "Enable autotuning of basals and ratios? (Recommended) [Y]/n " -r
+                                                    if [[ $REPLY =~ ^[Yy]$ ]]; then
+                                                                    ENABLE+=" autotune "
+                                                                            fi
+                                                                                    read -p "Enable advanced meal assist? (Recommended) [Y]/n " -r
+                                                                                            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                                                                                                            ENABLE+=" meal "
+                                                                                                                    fi
+                                                                                                                    else 
+   
    if [[ $ww_ti_usb_reset =~ ^[Yy] ]]; then
       ww_ti_usb_reset="yes"
    else
