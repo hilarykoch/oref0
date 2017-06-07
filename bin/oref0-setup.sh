@@ -322,15 +322,21 @@ if [[ -z "$DIR" || -z "$serial" ]]; then
        echo
     fi
 
-   read -p "Do you need any advanced features? (See docs in Phase 4 for more information about these features.) y/[N] " -r
+   read -p "Do you need any advanced features? (SMB/UAM or pushover alerts) y/[N] " -r
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         #delete this next 2 lines once we decide SMB goes in the script
-        echocolor "Ok. Remember to enable oref1 related features manually and update your preferences. See the docs for more details about enabling."
-        echo
-        #read -p "Enable supermicrobolus (SMB)? y/[N] " -r
-        #if [[ $REPLY =~ ^[Yy]$ ]]; then
-        #    ENABLE+=" microbolus "
-        #fi
+        #echocolor "Ok. Remember to enable oref1 related features manually and update your preferences. See the docs for more details about enabling."
+        #echo
+        read -p "Enable oref1 supermicrobolus features (SMB/UAM)? y/[N] " -r
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            ENABLE+=" microbolus "
+            echocolor "Ok, SMB/UAM will be added, but you must use preferences to turn them on."
+       echo
+             else
+            echocolor "Ok, no SMB/UAM for you."
+            echo
+        fi
+        
         read -p "Are you planning on using Pushover for oref1-related push alerts? y/[N] " -r
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             read -p "If so, what is your Pushover API Token? " -r
