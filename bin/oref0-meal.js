@@ -74,17 +74,15 @@ if (!module.parent) {
         }
     }
 
+    if (typeof basalprofile_data[0] == 'undefined') {
+        return console.error("Error: bad basalprofile_data:" + basalprofile_data);
+    }
     if (typeof basalprofile_data[0].glucose != 'undefined') {
       console.error("Warning: Argument order has changed: please update your oref0-meal device and meal.json report to place carbhistory.json after basalprofile.json");
       var temp = carb_data;
       carb_data = glucose_data;
       glucose_data = basalprofile_data;
       basalprofile_data = temp;
-    }
-
-    if (glucose_data.length < 36) {
-        console.error("Optional feature meal assist disabled: not enough glucose data to calculate carb absorption; found:", glucose_data.length);
-        return console.log('{ "carbs": 0, "reason": "not enough glucose data to calculate carb absorption" }');
     }
 
     var inputs = {
@@ -96,7 +94,14 @@ if (!module.parent) {
     , glucose: glucose_data
     };
 
-    var dia_carbs = generate(inputs);
-    console.log(JSON.stringify(dia_carbs));
+    var recentCarbs = generate(inputs);
+
+    if (glucose_data.length < 36) {
+        console.error("Not enough glucose data to calculate carb absorption; found:", glucose_data.length);
+        recentCarbs.mealCOB = 0;
+        recentCarbs.reason = "not enough glucose data to calculate carb absorption";
+    }
+
+    console.log(JSON.stringify(recentCarbs));
 }
 
